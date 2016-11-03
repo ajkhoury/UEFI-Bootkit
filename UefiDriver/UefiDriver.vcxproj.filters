@@ -81,6 +81,9 @@
     <ClInclude Include="pestructs.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="hook.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

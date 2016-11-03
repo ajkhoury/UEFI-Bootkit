@@ -60,6 +60,7 @@
   <ItemGroup>
     <ClInclude Include="drv.h" />
     <ClInclude Include="drvproto.h" />
+    <ClInclude Include="hook.h" />
     <ClInclude Include="imageldr.h" />
     <ClInclude Include="pe.h" />
     <ClInclude Include="pestructs.h" />
