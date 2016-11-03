@@ -8,7 +8,7 @@
 ;
 ; Summary:
 ;
-;    This module implements a hook for OslLoadImage in winload.efi
+;    This module implements a hook for OslArchTransferToKernel in winload.efi
 ;
 ; Environment:
 ;
