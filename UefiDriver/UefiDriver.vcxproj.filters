@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="drvmain.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="drvname.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="drvpnp.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="imageldr.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\libudis86\decode.c">
+      <Filter>src\udis86</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\libudis86\itab.c">
+      <Filter>src\udis86</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\libudis86\syn.c">
+      <Filter>src\udis86</Filter>
+    </ClCompile>
+    <ClCompile Include="pe.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\edk2\EdkCompatibilityPkg\Foundation\Efi\Protocol\SimpleFileSystem\SimpleFileSystem.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\libudis86\syn-att.c">
+      <Filter>src\udis86</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\libudis86\syn-intel.c">
+      <Filter>src\udis86</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\libudis86\udis86.c">
+      <Filter>src\udis86</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.c">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="udis86\libudis86\decode.h">
+      <Filter>include\udis86</Filter>
+    </ClInclude>
+    <ClInclude Include="udis86\libudis86\itab.h">
+      <Filter>include\udis86</Filter>
+    </ClInclude>
+    <ClInclude Include="udis86\libudis86\syn.h">
+      <Filter>include\udis86</Filter>
+    </ClInclude>
+    <ClInclude Include="udis86\libudis86\udint.h">
+      <Filter>include\udis86</Filter>
+    </ClInclude>
+    <ClInclude Include="udis86\libudis86\types.h">
+      <Filter>include\udis86</Filter>
+    </ClInclude>
+    <ClInclude Include="udis86\udis86.h">
+      <Filter>include\udis86</Filter>
+    </ClInclude>
+    <ClInclude Include="drv.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="drvproto.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="udis86\libudis86\extern.h">
+      <Filter>include\udis86</Filter>
+    </ClInclude>
+    <ClInclude Include="imageldr.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="pe.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="pestructs.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{53d6ef03-38de-42b6-98a7-be4995765f1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\udis86">
+      <UniqueIdentifier>{2a260963-9c87-4302-a8e0-cb9c63d5f4d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{15de1be8-845c-4c4a-96b6-94168d6b0955}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\udis86">
+      <UniqueIdentifier>{6870edff-c3a7-4b92-b333-71f1f7a77f76}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="hook.asm">
+      <Filter>src</Filter>
+    </MASM>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DF325AB7-67A6-473E-93FF-16955AFBC063}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <PlatformToolset>v140</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(SolutionDir)\bootkit.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(EDK_PATH)\MdePkg\Include;$(EDK_PATH)\MdePkg\Include\X64;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>UefiDriverEntryPoint.lib;BaseCryptLib.lib;IntrinsicLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem Condition="'$(Configuration)|$(Platform)'=='Release|x64'">EFI Runtime</SubSystem>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y "$(TargetDir)$(TargetName).efi" "G:\efi\boot\rtdriver.efi"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y "$(TargetDir)$(TargetName).efi" "G:\efi\boot\rtdriver.efi"</Message>
+    </PostBuildEvent>
+    <ClCompile>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">__UD_STANDALONE__;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4706;4055;4054</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\edk2\EdkCompatibilityPkg\Foundation\Efi\Protocol\SimpleFileSystem\SimpleFileSystem.c" />
+    <ClCompile Include="drvname.c" />
+    <ClCompile Include="drvpnp.c" />
+    <ClCompile Include="drvmain.c" />
+    <ClCompile Include="imageldr.c" />
+    <ClCompile Include="pe.c" />
+    <ClCompile Include="udis86\libudis86\decode.c" />
+    <ClCompile Include="udis86\libudis86\itab.c" />
+    <ClCompile Include="udis86\libudis86\syn-att.c" />
+    <ClCompile Include="udis86\libudis86\syn-intel.c" />
+    <ClCompile Include="udis86\libudis86\syn.c" />
+    <ClCompile Include="udis86\libudis86\udis86.c" />
+    <ClCompile Include="utils.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="drv.h" />
+    <ClInclude Include="drvproto.h" />
+    <ClInclude Include="imageldr.h" />
+    <ClInclude Include="pe.h" />
+    <ClInclude Include="pestructs.h" />
+    <ClInclude Include="udis86\libudis86\decode.h" />
+    <ClInclude Include="udis86\libudis86\extern.h" />
+    <ClInclude Include="udis86\libudis86\itab.h" />
+    <ClInclude Include="udis86\libudis86\syn.h" />
+    <ClInclude Include="udis86\libudis86\types.h" />
+    <ClInclude Include="udis86\libudis86\udint.h" />
+    <ClInclude Include="udis86\udis86.h" />
+    <ClInclude Include="utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="hook.asm" />
+  </ItemGroup>
+</Project>
