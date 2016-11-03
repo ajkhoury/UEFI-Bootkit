@@ -41,7 +41,7 @@ CHAR8 *gEfiCallerBaseName = "UefiApplication";
 static CHAR16 *gRuntimeDriverImagePath = L"\\EFI\\Boot\\rtdriver.efi";
 
 // 
-// Try to find gWindowsBootX64ImagePath by browsing each device
+// Try to find a file by browsing each device
 // 
 EFI_STATUS LocateFile( IN CHAR16* ImagePath, OUT EFI_DEVICE_PATH** DevicePath )
 {
