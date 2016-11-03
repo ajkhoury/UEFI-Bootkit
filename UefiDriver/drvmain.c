@@ -60,6 +60,9 @@ EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( VOID* Parameters, VOID* Imag
 {
 	PIMAGE_NT_HEADERS NtHdr = NULL;
 
+	// Restore original bytes to call
+	CopyMem( ImgArchEfiStartBootApplicationPatchLocation, ImgArchEfiStartBootApplicationBackup, 5 );
+
 	// Clear the screen
 	gST->ConOut->ClearScreen( gST->ConOut );
 
@@ -83,39 +86,32 @@ EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( VOID* Parameters, VOID* Imag
 		{
 			Print( L"Found OslArchTransferToKernel call at %lx\r\n", Found );
 
-			//Print( L"hkOslArchTransferToKernel at %lx\r\n", hkOslArchTransferToKernel );
-			//UtilDisassembleCode( (UINT8*)hkOslArchTransferToKernel, (UINTN)hkOslArchTransferToKernel, 20 );
+			// Get original from call instruction
 			oOslArchTransferToKernel = (tOslArchTransferToKernel)UtilCallAddress( Found );
-			Print( L"Original OslArchTransferToKernel at %lx\r\n", oOslArchTransferToKernel );
+			Print( L"OslArchTransferToKernel at %lx\r\n", oOslArchTransferToKernel );
 			Print( L"OslArchTransferToKernelHook at %lx\r\n", &OslArchTransferToKernelHook );
 
 			// Backup original function bytes before patching
 			OslArchTransferToKernelPatchLocation = (VOID*)Found;
 			CopyMem( (VOID*)OslArchTransferToKernelBackup, (VOID*)Found, 5 );
-			//Print( L"Backup:\r\n" );
-			//UtilDisassembleCode( (UINT8*)Found, (UINTN)Found, 5 );
+
+			// display original code
+			Print( L"Original:\r\n" );
+			UtilDisassembleCode( (UINT8*)Found, (VOID*)Found, 5 );
 
 			// Do patching 
 			*(UINT8*)Found = 0xE8;
-			*(UINT32*)(Found + 1) = UtilCalcRelativeCallOffset( (VOID*)Found, (VOID*)&OslArchTransferToKernelHook ); //(UINT32)(((UINTN)&OslArchTransferToKernelHook) - ((UINTN)Found + 1 + sizeof( UINT32 )));
+			*(UINT32*)(Found + 1) = UtilCalcRelativeCallOffset( (VOID*)Found, (VOID*)&OslArchTransferToKernelHook );
 
 			// Display patched code 
-			//Print( L"Patched:\r\n" );
-			//UtilDisassembleCode( (UINT8*)Found, (UINTN)Found, 5 );
-
-			Print( L"OslArchTransferToKernelHook:\r\n" );
-			UtilDisassembleCode( (UINT8*)&OslArchTransferToKernelHook, (VOID*)&OslArchTransferToKernelHook, 20 );
+			Print( L"Patched:\r\n" );
+			UtilDisassembleCode( (UINT8*)Found, (VOID*)Found, 5 );
 		}
 		else
 		{
 			Print( L"\r\nImgArchEfiStartBootApplication error, failed to find SetOslEntryPoint patch location. Status: %lx\r\n", EfiStatus );
 		}
 	}
-
-	// Restore original bytes to call
-	CopyMem( ImgArchEfiStartBootApplicationPatchLocation, ImgArchEfiStartBootApplicationBackup, 5 );
-	//Print( L"ImgArchEfiStartBootApplication original = %lx\r\n", oImgArchEfiStartBootApplication );
-	//UtilDisassembleCode( (UINT8*)ImgArchEfiStartBootApplicationPatchLocation, (UINTN)ImgArchEfiStartBootApplicationPatchLocation, 8 );
 
 	Print( L"Press any key to continue..." );
 	UtilWaitForKey( );
