@@ -1,4 +1,4 @@
-#include "drv.h"
+﻿#include "drv.h"
 
 //
 // Libraries
@@ -36,22 +36,17 @@ const UINT32 _gDxeRevision = 0x200;
 CHAR8 *gEfiCallerBaseName = "UefiDriver";
 
 // Title
-static CHAR16 *gTitle = L"-= Dude719s UEFI bootkit Runtime Dirver =-\r\n";
-static CHAR16 *gWindowsBootX64ImagePath = L"\\EFI\\Microsoft\\Boot\\bootmgfw.efi";
+#define BOOTKIT_TITLE1		L"\r\n ██████╗ ██╗   ██╗██████╗ ███████╗███████╗ ██╗ █████╗  " \
+							L"\r\n ██╔══██╗██║   ██║██╔══██╗██╔════╝╚════██║███║██╔══██╗ " \
+							L"\r\n ██║  ██║██║   ██║██║  ██║█████╗      ██╔╝╚██║╚██████║ " 
+#define BOOTKIT_TITLE2		L"\r\n ██║  ██║██║   ██║██║  ██║██╔══╝     ██╔╝  ██║ ╚═══██║ " \
+							L"\r\n ██████╔╝╚██████╔╝██████╔╝███████╗   ██║   ██║ █████╔╝ " \
+							L"\r\n ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝ ╚════╝  "
+
+#define BOOTMGFW_EFI_PATH	L"\\EFI\\Microsoft\\Boot\\bootmgfw.efi"
+
 static EFI_HANDLE gWindowsImagehandle;
 
-
-//VOID EFIAPI hkOslArchTransferToKernel( VOID* KernelParams, VOID* KiSystemStartup )
-//{
-//	// Clear the screen
-//	//gST->ConOut->ClearScreen( gST->ConOut );
-//	//Print( L"KiSystemStartup = %lx\r\n", KiSystemStartup );
-//	//UtilWaitForKey( );
-//
-//	OslArchTransferToKernelHook( KernelParams, KernelParams );
-//
-//	//oOslArchTransferToKernel( KernelParams, KiSystemStartup );
-//}
 
 //
 // Our ImgArchEfiStartBootApplication hook which takes the winload Image Base as a parameter so we can patch the kernel
@@ -178,47 +173,6 @@ EFI_STATUS PatchWindowsBootManager( IN VOID* LocalImageBase, IN EFI_HANDLE BootM
 }
 
 // 
-// Try to find gWindowsBootX64ImagePath by browsing each device
-// 
-EFI_STATUS LocateWindowsBootManager( EFI_DEVICE_PATH** LoaderDevicePath )
-{
-	EFI_FILE_IO_INTERFACE *ioDevice;
-	EFI_FILE_HANDLE handleRoots, bootFile;
-	EFI_HANDLE* handleArray;
-	UINTN nbHandles, i;
-	EFI_STATUS efistatus;
-
-	*LoaderDevicePath = (EFI_DEVICE_PATH *)NULL;
-	efistatus = gBS->LocateHandleBuffer( ByProtocol, &gEfiSimpleFileSystemProtocolGuid, NULL, &nbHandles, &handleArray );
-	if (EFI_ERROR( efistatus ))
-		return efistatus;
-
-	Print( L"\r\nNumber of UEFI Filesystem Devices: %d\r\n", nbHandles );
-
-	for (i = 0; i < nbHandles; i++)
-	{
-		efistatus = gBS->HandleProtocol( handleArray[i], &gEfiSimpleFileSystemProtocolGuid, &ioDevice );
-		if (efistatus != EFI_SUCCESS)
-			continue;
-
-		efistatus = ioDevice->OpenVolume( ioDevice, &handleRoots );
-		if (EFI_ERROR( efistatus ))
-			continue;
-
-		efistatus = handleRoots->Open( handleRoots, &bootFile, gWindowsBootX64ImagePath, EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY );
-		if (!EFI_ERROR( efistatus ))
-		{
-			handleRoots->Close( bootFile );
-			*LoaderDevicePath = FileDevicePath( handleArray[i], gWindowsBootX64ImagePath );
-			Print( L"\r\nFound Windows x64 bootmgfw.efi file at \'%s\'\r\n", ConvertDevicePathToText( *LoaderDevicePath, TRUE, TRUE ) );
-			break;
-		}
-	}
-
-	return efistatus;
-}
-
-// 
 // Main entry point
 // 
 EFI_STATUS EFIAPI UefiMain( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable )
@@ -237,40 +191,48 @@ EFI_STATUS EFIAPI UefiMain( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syst
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
 
-	Print( gTitle );
-	Print( L"\r\nRuntime Driver handle is %lx and System Table is at %p\r\n", ImageHandle, SystemTable );
-
+	//
+	// Print stuff out
+	//
+	Print( L"\r\n\r\n" );
+	Print( L"%s", BOOTKIT_TITLE1 );
+	Print( L"%s", BOOTKIT_TITLE2 );
 	efiStatus = gBS->HandleProtocol( ImageHandle, &gEfiLoadedImageProtocolGuid, &Image );
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
-
 	UtilPrintLoadedImageInfo( Image );
 
-	Print( L"\r\nLocating Windows UEFI Boot Manager...\r\n" );
-	efiStatus = LocateWindowsBootManager( &WinBootMgrDevicePath );
+	//
+	// Locate 
+	//
+	Print( L"Locating Windows UEFI Boot Manager... " );
+	efiStatus = UtilLocateFile( BOOTMGFW_EFI_PATH, &WinBootMgrDevicePath );
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
-
+	Print( L"Found!\r\n" );
+	
+	Print( L"Patching Windows Boot Manager... " );
 	efiStatus = ImageLoad( ImageHandle, WinBootMgrDevicePath, &gWindowsImagehandle );
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
-
-	Print( L"\r\nPatching Windows Boot Manager...\r\n" );
-
 	efiStatus = PatchWindowsBootManager( Image->ImageBase, gWindowsImagehandle );
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
+	Print( L"Patched!\r\n" );
 
-	Print( L"\r\nSuccessfully patched Windows Boot Manager!\r\n" );
-
-	//Print( L"\r\nPress any key to load Windows...\r\n" );
-	//UtilWaitForKey( );
+	Print( L"\r\nPress any key to load Windows...\r\n" );
+	UtilWaitForKey( );
 
 	efiStatus = ImageStart( gWindowsImagehandle );
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
 
 Exit:
+	if (efiStatus != EFI_SUCCESS)
+	{
+		ErrorPrint( L"\r\nUEFI Runtime Driver failed with status: %lx\r\n", efiStatus );
+	}
+
 	return efiStatus;
 }
 

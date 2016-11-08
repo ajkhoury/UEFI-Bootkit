@@ -35,13 +35,3 @@ VOID* UtilCallAddress( IN VOID* CallAddress );
 // Calculates a relative offset to the target from the call address
 //
 UINT32 UtilCalcRelativeCallOffset( IN VOID* CallAddress, IN VOID* TargetAddress );
-
-//
-// Calculates code size by searching for next 0xCC INT3 instruction
-//
-UINT32 UtilCodeSize( IN UINT8* CodeStart );
-
-//
-// Displays x64 disassembly at specified address
-//
-VOID UtilDisassembleCode( IN UINT8* CodeStart, IN VOID* VirtualAddress, IN UINT32 Length );

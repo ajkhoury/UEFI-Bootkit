@@ -1,4 +1,4 @@
-//
+﻿//
 // Basic UEFI Libraries
 //
 #include <Uefi.h>
@@ -84,14 +84,8 @@ EFI_STATUS LocateFile( IN CHAR16* ImagePath, OUT EFI_DEVICE_PATH** DevicePath )
 EFI_STATUS EFIAPI UefiMain( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* SystemTable )
 {
 	EFI_STATUS efiStatus;
-	EFI_RUNTIME_DRIVER_PROTOCOL* RuntimeProtocol;
 	EFI_DEVICE_PATH* RuntimeDriverDevicePath = NULL;
 	EFI_HANDLE RuntimeDriverHandle = NULL;
-
-	//
-	// Print stuff out
-	//
-	Print( L"Hello World! My handle is %lx and System Table is at %p\n", ImageHandle, SystemTable );
 
 	//
 	// Locate the runtime driver
@@ -114,23 +108,10 @@ EFI_STATUS EFIAPI UefiMain( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* Syst
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
 
-	//
-	// Check if the runtime driver is loaded
-	//
-	efiStatus = gBS->LocateProtocol( &gEfiSampleDriverProtocolGuid, NULL, &RuntimeProtocol );
-	if (EFI_ERROR( efiStatus ))
-		goto Exit;
-
-	//
-	// Print the value and exit
-	//
-	Print( L"Runtime driver is loaded: %lx\n", RuntimeProtocol->Value );
-	efiStatus = EFI_SUCCESS;
-
 Exit:
 	if (efiStatus != EFI_SUCCESS)
 	{
-		ErrorPrint( L"UEFI Runtime Driver Loader failed with status: %lx\r\n", efiStatus );
+		ErrorPrint( L"%EUEFI Runtime Driver Loader failed with status: %H%lx%N\r\n", efiStatus );
 	}
 
 	return efiStatus;
