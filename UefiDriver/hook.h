@@ -1,5 +1,7 @@
 #pragma once
 
+#include "bootloader.h"
+
 //
 // Implemented in hook.asm
 //
@@ -9,7 +11,7 @@ EFI_STATUS PrintTestString( VOID );
 //
 // ImgArchEfiStartBootApplication hook
 //
-typedef EFI_STATUS( EFIAPI *tImgArchEfiStartBootApplication )(VOID* Parameters, VOID* ImageBase, UINT32 ImageSize, UINT8 BootOption, UINT64* SomeReturnValue);
+typedef EFI_STATUS( EFIAPI *tImgArchEfiStartBootApplication )(PBL_APPLICATION_ENTRY AppEntry, VOID* ImageBase, UINT32 ImageSize, UINT8 BootOption, PBL_RETURN_ARGUMENTS ReturnArguments);
 static UINT8 sigImgArchEfiStartBootApplicationCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x8B, 0xCE, 0x8B, 0xD8, 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x41 };
 VOID* ImgArchEfiStartBootApplicationPatchLocation = NULL;
 UINT8 ImgArchEfiStartBootApplicationBackup[5] = { 0 };

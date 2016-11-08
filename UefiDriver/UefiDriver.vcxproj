@@ -58,6 +58,7 @@
     <ClCompile Include="utils.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bootloader.h" />
     <ClInclude Include="drv.h" />
     <ClInclude Include="drvproto.h" />
     <ClInclude Include="hook.h" />

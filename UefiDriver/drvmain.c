@@ -51,7 +51,7 @@ static EFI_HANDLE gWindowsImagehandle;
 //
 // Our ImgArchEfiStartBootApplication hook which takes the winload Image Base as a parameter so we can patch the kernel
 //
-EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( VOID* Parameters, VOID* ImageBase, UINT32 ImageSize, UINT8 BootOption, UINT64* SomeReturnValue )
+EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( PBL_APPLICATION_ENTRY AppEntry, VOID* ImageBase, UINT32 ImageSize, UINT8 BootOption, PBL_RETURN_ARGUMENTS ReturnArguments )
 {
 	PIMAGE_NT_HEADERS NtHdr = NULL;
 
@@ -62,9 +62,32 @@ EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( VOID* Parameters, VOID* Imag
 	gST->ConOut->ClearScreen( gST->ConOut );
 
 	Print( L"Inside ImgArchEfiStartBootApplication\r\n" );
-
 	Print( L"ImageBase = %lx\r\n", ImageBase );
 	Print( L"ImageSize = %lx\r\n", ImageSize );
+	Print( L"EntryRoutine = %lx\r\n", (VOID*)((UINT8*)ImageBase + HEADER_VAL_T( NtHdr, AddressOfEntryPoint )) );
+	Print( L"AppEntry:\r\n" );
+	Print( L"  Signature: %a\r\n", AppEntry->Signature );
+	Print( L"  Flags: %lx\r\n", AppEntry->Flags );
+	Print( L"  GUID: %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x\r\n", 
+		   AppEntry->Guid.Data1,
+		   AppEntry->Guid.Data2,
+		   AppEntry->Guid.Data3,
+		   AppEntry->Guid.Data4[0],
+		   AppEntry->Guid.Data4[1],
+		   AppEntry->Guid.Data4[2],
+		   AppEntry->Guid.Data4[3],
+		   AppEntry->Guid.Data4[4],
+		   AppEntry->Guid.Data4[5],
+		   AppEntry->Guid.Data4[6],
+		   AppEntry->Guid.Data4[7] );
+	Print( L"  Unknown: %lx %lx %lx %lx\r\n", AppEntry->Unknown[0], AppEntry->Unknown[1], AppEntry->Unknown[2], AppEntry->Unknown[3] );
+	Print( L"  BcdData:\r\n" );
+	Print( L"    Type: %lx\r\n", AppEntry->BcdData.Type );
+	Print( L"    DataOffset: %lx\r\n", AppEntry->BcdData.DataOffset );
+	Print( L"    DataSize: %lx\r\n", AppEntry->BcdData.DataSize );
+	Print( L"    ListOffset: %lx\r\n", AppEntry->BcdData.ListOffset );
+	Print( L"    NextEntryOffset: %lx\r\n", AppEntry->BcdData.NextEntryOffset );
+	Print( L"    Empty: %lx\r\n", AppEntry->BcdData.Empty );
 
 	NtHdr = ImageNtHeader( ImageBase );
 	if (NtHdr != NULL)
@@ -114,7 +137,7 @@ EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( VOID* Parameters, VOID* Imag
 	// Clear screen
 	gST->ConOut->ClearScreen( gST->ConOut );
 
-	return oImgArchEfiStartBootApplication( Parameters, ImageBase, ImageSize, BootOption, SomeReturnValue );
+	return oImgArchEfiStartBootApplication( AppEntry, ImageBase, ImageSize, BootOption, ReturnArguments );
 }
 
 //
