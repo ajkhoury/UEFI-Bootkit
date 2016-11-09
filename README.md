@@ -5,7 +5,7 @@ A small bootkit designed to use as little ASM as possible. Make sure to compile 
 Thanks to [pyro666](https://github.com/Pyro666) and [dreamboot](https://github.com/quarkslab/dreamboot)
 
 ## License
-Copyright (C) 2016 dude719
+Copyright (C) 2016 dude719, pyro666, Quarkslab
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
