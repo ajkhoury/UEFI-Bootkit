@@ -2,7 +2,7 @@
 
 A small bootkit designed to use as little ASM as possible. Make sure to compile the driver as an EFI Runtime driver (EFI_RUNTIME_DRIVER) or else the bootkit will be freed once winload.efi calls ExitBootService!
 
-Thanks to [pyro666](https://github.com/Pyro666), [dreamboot](https://github.com/quarkslab/dreamboot), and VisualUEFI(https://github.com/ionescu007/VisualUefi)
+Thanks to [pyro666](https://github.com/Pyro666), [dreamboot](https://github.com/quarkslab/dreamboot), and [VisualUEFI](https://github.com/ionescu007/VisualUefi)
 
 ![alt text](https://i.gyazo.com/8fa42e625ee993ab1bd0ee136076f5ef.png "Bootkit")
 
