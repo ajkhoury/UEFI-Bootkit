@@ -47,6 +47,8 @@ CHAR8 *gEfiCallerBaseName = "UefiDriver";
 
 static EFI_HANDLE gWindowsImagehandle;
 
+// Inside hooks.asm
+VOID* FindPattern( VOID* ImageBase, UINT32 ImageSize, UINT8* Pattern, UINT32 PatternSize );
 
 //
 // Our ImgArchEfiStartBootApplication hook which takes the winload Image Base as a parameter so we can patch the kernel
@@ -68,18 +70,7 @@ EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( PBL_APPLICATION_ENTRY AppEnt
 	Print( L"AppEntry:\r\n" );
 	Print( L"  Signature: %a\r\n", AppEntry->Signature );
 	Print( L"  Flags: %lx\r\n", AppEntry->Flags );
-	Print( L"  GUID: %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x\r\n", 
-		   AppEntry->Guid.Data1,
-		   AppEntry->Guid.Data2,
-		   AppEntry->Guid.Data3,
-		   AppEntry->Guid.Data4[0],
-		   AppEntry->Guid.Data4[1],
-		   AppEntry->Guid.Data4[2],
-		   AppEntry->Guid.Data4[3],
-		   AppEntry->Guid.Data4[4],
-		   AppEntry->Guid.Data4[5],
-		   AppEntry->Guid.Data4[6],
-		   AppEntry->Guid.Data4[7] );
+	Print( L"  GUID: %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x\r\n", AppEntry->Guid.Data1, AppEntry->Guid.Data2, AppEntry->Guid.Data3, AppEntry->Guid.Data4[0], AppEntry->Guid.Data4[1], AppEntry->Guid.Data4[2], AppEntry->Guid.Data4[3], AppEntry->Guid.Data4[4], AppEntry->Guid.Data4[5], AppEntry->Guid.Data4[6], AppEntry->Guid.Data4[7] );
 	Print( L"  Unknown: %lx %lx %lx %lx\r\n", AppEntry->Unknown[0], AppEntry->Unknown[1], AppEntry->Unknown[2], AppEntry->Unknown[3] );
 	Print( L"  BcdData:\r\n" );
 	Print( L"    Type: %lx\r\n", AppEntry->BcdData.Type );
@@ -99,8 +90,8 @@ EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( PBL_APPLICATION_ENTRY AppEnt
 		Print( L"ArchpChildAppEntryRoutine = %lx\r\n", ArchpChildAppEntryRoutine );		
 
 		// Find right location to patch
-		EfiStatus = UtilFindPattern( sigOslArchTransferToKernel, 0xCC, sizeof( sigOslArchTransferToKernel ), ImageBase, (UINT32)ImageSize, (VOID**)&Found );
-		if (!EFI_ERROR( EfiStatus ))
+		Found = FindPattern( ImageBase, ImageSize, sigOslArchTransferToKernel, sizeof( sigOslArchTransferToKernel ) );
+		if (Found)
 		{
 			Print( L"Found OslArchTransferToKernel call at %lx\r\n", Found );
 
@@ -127,7 +118,7 @@ EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( PBL_APPLICATION_ENTRY AppEnt
 		}
 		else
 		{
-			Print( L"\r\nImgArchEfiStartBootApplication error, failed to find SetOslEntryPoint patch location. Status: %lx\r\n", EfiStatus );
+			Print( L"\r\nImgArchEfiStartBootApplication error, failed to find OslArchTransferToKernel patch location. Status: %lx\r\n", EfiStatus );
 		}
 	}
 
