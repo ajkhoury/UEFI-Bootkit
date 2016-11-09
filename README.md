@@ -4,6 +4,8 @@ A small bootkit designed to use as little ASM as possible. Make sure to compile 
 
 Thanks to [pyro666](https://github.com/Pyro666) and [dreamboot](https://github.com/quarkslab/dreamboot)
 
+![alt text](https://i.gyazo.com/8fa42e625ee993ab1bd0ee136076f5ef.png "Bootkit")
+
 ## License
 Copyright (C) 2016 dude719, pyro666, Quarkslab
 
