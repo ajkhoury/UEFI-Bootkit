@@ -52,13 +52,45 @@ static EFI_LOADED_IMAGE* gLocalImageInfo;
 // Inside hooks.asm
 VOID* FindPattern( VOID* ImageBase, UINT32 ImageSize, const UINT8* Pattern, UINT32 PatternSize );
 
+PKLDR_DATA_TABLE_ENTRY GetLoadedModule( LIST_ENTRY* LoadOrderListHead, CHAR16* ModuleName )
+{
+	if (ModuleName == NULL || LoadOrderListHead == NULL)
+		return NULL;
+
+	for (LIST_ENTRY* ListEntry = LoadOrderListHead->ForwardLink; ListEntry != LoadOrderListHead; ListEntry = ListEntry->ForwardLink)
+	{
+		PKLDR_DATA_TABLE_ENTRY Entry = CONTAINING_RECORD( ListEntry, KLDR_DATA_TABLE_ENTRY, InLoadOrderLinks );
+		if (Entry)
+		{
+			if (StrnCmp( Entry->BaseImageName.Buffer, ModuleName, Entry->BaseImageName.Length ) == 0)
+			{
+				return Entry;
+			}
+		}
+	}
+
+	return NULL;
+}
 
 //
 // OslArchTransferToKernel hook
 //
-VOID EFIAPI hkOslArchTransferToKernel( VOID *KernelParams, VOID *KiSystemStartup )
+VOID EFIAPI hkOslArchTransferToKernel( PLOADER_PARAMETER_BLOCK KernelParams, VOID *KiSystemStartup )
 {
 	__debugbreak( );
+
+	VOID* KernelBase = NULL;
+	UINT32 KernelSize = 0;
+
+	PKLDR_DATA_TABLE_ENTRY KernelEntry = GetLoadedModule( &KernelParams->LoadOrderListHead, L"ntoskrnl.exe" );
+	if (KernelEntry)
+	{
+		KernelBase = KernelEntry->ImageBase;
+		KernelSize = KernelEntry->SizeOfImage;
+	}
+
+
+
 	oOslArchTransferToKernel( KernelParams, KiSystemStartup );
 }
 

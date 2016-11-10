@@ -1,8 +1,7 @@
 #pragma once
 
-#pragma once
-
 #include <Protocol/GraphicsOutput.h>
+#include "arc.h"
 
 typedef UINTN BLSTATUS;
 #define BLAPI __stdcall

@@ -20,7 +20,7 @@ tImgArchEfiStartBootApplication oImgArchEfiStartBootApplication = NULL;
 //
 // OslArchTransferToKernel hook
 //
-typedef VOID( EFIAPI *tOslArchTransferToKernel )(VOID *KernelParams, VOID *KiSystemStartup);
+typedef VOID( EFIAPI *tOslArchTransferToKernel )(PLOADER_PARAMETER_BLOCK KernelParams, VOID *KiSystemStartup);
 UINT8 sigOslArchTransferToKernelCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0xEB, 0xFE }; // 48 8B 45 A8 33 FF
 VOID* OslArchTransferToKernelCallPatchLocation;
 UINT8 OslArchTransferToKernelCallBackup[5];

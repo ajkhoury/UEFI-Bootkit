@@ -41,6 +41,38 @@ typedef struct _UNICODE_STRING
 } UNICODE_STRING;
 
 //
+// Calculate the address of the base of the structure given its type, and an
+// address of a field within the structure.
+//
+#define CONTAINING_RECORD(address, type, field) ((type *)((CHAR8*)(address) - (UINT64)(&((type *)0)->field)))
+
+typedef struct _KLDR_DATA_TABLE_ENTRY
+{
+	struct _LIST_ENTRY InLoadOrderLinks; // 0x0
+	VOID* ExceptionTable; // 0x10
+	UINT32 ExceptionTableSize; // 0x18
+	// ULONG padding on IA64
+	VOID* GpValue; // 0x20
+	VOID* NonPagedDebugInfo; // 0x28
+	VOID* ImageBase; // 0x30
+	VOID* EntryPoint; // 0x38
+	UINT32 SizeOfImage; // 0x40
+	struct _UNICODE_STRING FullImageName; // 0x48
+	struct _UNICODE_STRING BaseImageName; // 0x58
+	UINT32 Flags; // 0x68
+	UINT16 LoadCount; // 0x6C
+	UINT16 u1; // 0x6E
+	VOID* SectionPointer; // 0x70
+	UINT32 CheckSum; // 0x78
+	UINT32 CoverageSectionSize; // 0x7C
+	VOID* CoverageSection; // 0x80
+	VOID* LoadedImports; // 0x88
+	VOID* Spare; // 0x90
+	UINT32 SizeOfImageNotRounded; // 0x98
+	UINT32 TimeDateStamp; // 0x9C
+} KLDR_DATA_TABLE_ENTRY, *PKLDR_DATA_TABLE_ENTRY;
+
+//
 // Define DEVICE_FLAGS
 //
 
