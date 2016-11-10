@@ -3,17 +3,11 @@
 #include "bootloader.h"
 
 //
-// Implemented in hook.asm
-//
-EFI_STATUS PrintString( IN CHAR16* Str );
-EFI_STATUS PrintTestString( VOID );
-
-//
 // ImgArchEfiStartBootApplication hook
 //
 typedef EFI_STATUS( EFIAPI *tImgArchEfiStartBootApplication )(PBL_APPLICATION_ENTRY AppEntry, VOID* ImageBase, UINT32 ImageSize, UINT8 BootOption, PBL_RETURN_ARGUMENTS ReturnArguments);
 UINT8 sigImgArchEfiStartBootApplicationCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x8B, 0xCE, 0x8B, 0xD8, 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x41 };
-VOID* ImgArchEfiStartBootApplicationPatchLocation = NULL;
+UINT8* ImgArchEfiStartBootApplicationPatchLocation = NULL;
 UINT8 ImgArchEfiStartBootApplicationBackup[5] = { 0 };
 tImgArchEfiStartBootApplication oImgArchEfiStartBootApplication = NULL;
 
@@ -22,19 +16,9 @@ tImgArchEfiStartBootApplication oImgArchEfiStartBootApplication = NULL;
 //
 typedef VOID( EFIAPI *tOslArchTransferToKernel )(PLOADER_PARAMETER_BLOCK KernelParams, VOID *KiSystemStartup);
 UINT8 sigOslArchTransferToKernelCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0xEB, 0xFE }; // 48 8B 45 A8 33 FF
-VOID* OslArchTransferToKernelCallPatchLocation;
+UINT8* OslArchTransferToKernelCallPatchLocation;
 UINT8 OslArchTransferToKernelCallBackup[5];
 tOslArchTransferToKernel oOslArchTransferToKernel = NULL;
-VOID* OslArchTransferToKernelHook;
-
-//
-// OslLoadImage hook
-//
-UINT8 sigOslLoadImageCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x63, 0xCC, 0x85, 0xCC, 0x0F, 0x89 };
-typedef EFI_STATUS( EFIAPI *tOslLoadImage )(UINT64 DataTableIndex, UINT32 LoadFlags, CHAR16 *ImagePath, CHAR16 *ImageName, UINT32 ImageFlags, VOID* Base, UINT32 Size);
-VOID* OslLoadImageCallPatchLocation = NULL;
-UINT8 OslLoadImageCallBackup[5] = { 0 };
-tOslLoadImage oOslLoadImage = NULL;
 
 
 // 

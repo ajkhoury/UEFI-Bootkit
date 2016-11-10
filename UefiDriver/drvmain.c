@@ -87,7 +87,7 @@ VOID EFIAPI hkOslArchTransferToKernel( PLOADER_PARAMETER_BLOCK KernelParams, VOI
 	//
 	// Before we do anything, restore original call bytes
 	//
-	CopyMem( OslArchTransferToKernelCallPatchLocation, OslArchTransferToKernelCallBackup, 5 );
+	*(UINT32*)(OslArchTransferToKernelCallPatchLocation + 1) = *(UINT32*)(OslArchTransferToKernelCallBackup + 1);
 
 	//
 	// Get ntoskrnl entry from the loader parameter block's LoadOrderList
@@ -112,7 +112,7 @@ VOID EFIAPI hkOslArchTransferToKernel( PLOADER_PARAMETER_BLOCK KernelParams, VOI
 			//
 			// Patch to force a jump to skip PG initialization
 			//
-			*(UINT8*)Found = 0xE8;
+			*(UINT8*)Found = 0xEB;
 		}
 
 		//
@@ -126,7 +126,7 @@ VOID EFIAPI hkOslArchTransferToKernel( PLOADER_PARAMETER_BLOCK KernelParams, VOI
 			//
 			// Patch to force a jump to skip setting the No Execute bit
 			//
-			*(UINT8*)Found = 0xE8;
+			*(UINT8*)Found = 0xEB;
 		}
 	}
 
