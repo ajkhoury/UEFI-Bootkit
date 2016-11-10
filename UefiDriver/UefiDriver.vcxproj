@@ -78,7 +78,4 @@
     <ClInclude Include="udis86\udis86.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
-  <ItemGroup>
-    <MASM Include="hook.asm" />
-  </ItemGroup>
 </Project>

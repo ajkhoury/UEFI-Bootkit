@@ -105,9 +105,4 @@
       <UniqueIdentifier>{6870edff-c3a7-4b92-b333-71f1f7a77f76}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-  <ItemGroup>
-    <MASM Include="hook.asm">
-      <Filter>src</Filter>
-    </MASM>
-  </ItemGroup>
 </Project>
