@@ -59,8 +59,9 @@ tOslLoadImage oOslLoadImage = NULL;
 // INIT:000000014075698B 0F 30                         wrmsr
 // INIT:000000014075698D B0 01                         mov     al, 1
 // INIT:000000014075698F A2 80 02 00 00 80 F7 FF FF    mov     ds:0FFFFF78000000280h, al
-UINT8 sigNxSetBit[] = { 0x74, 0x27, 0xB9, 0x80, 0x00, 0x00, 0xC0, 0x0F, 0x32 };
-UINTN sigNxSetBitSize = sizeof( sigNxSetBit );
+UINT8 sigNxSetBit[] = { 0x74, 0xCC, 0xB9, 0x80, 0x00, 0x00, 0xC0, 0x0F, 0x32 };
+UINTN sigNxSetBitSize = 9;
+VOID* NxSetBitPatchLocation = NULL;
 
 // Skip initializing patchguard
 // KeInitAmd64SpecificState
@@ -94,4 +95,5 @@ UINTN sigNxSetBitSize = sizeof( sigNxSetBit );
 // INIT:000000014074BAAA                     KeInitAmd64SpecificState endp
 UINT8 sigInitPatchGuard[] = { 0x75, 0x2D, 0x0F, 0xB6, 0x15 };
 UINTN sigInitPatchGuardSize = 5;
+VOID* InitPatchGuardPatchLocation = NULL;
 

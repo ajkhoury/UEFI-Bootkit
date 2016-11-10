@@ -52,6 +52,9 @@ static EFI_LOADED_IMAGE* gLocalImageInfo;
 // Inside hooks.asm
 VOID* FindPattern( VOID* ImageBase, UINT32 ImageSize, const UINT8* Pattern, UINT32 PatternSize );
 
+//
+// Get loaded module entry from the LoadOrderList
+//
 PKLDR_DATA_TABLE_ENTRY GetLoadedModule( LIST_ENTRY* LoadOrderListHead, CHAR16* ModuleName )
 {
 	if (ModuleName == NULL || LoadOrderListHead == NULL)
@@ -60,13 +63,8 @@ PKLDR_DATA_TABLE_ENTRY GetLoadedModule( LIST_ENTRY* LoadOrderListHead, CHAR16* M
 	for (LIST_ENTRY* ListEntry = LoadOrderListHead->ForwardLink; ListEntry != LoadOrderListHead; ListEntry = ListEntry->ForwardLink)
 	{
 		PKLDR_DATA_TABLE_ENTRY Entry = CONTAINING_RECORD( ListEntry, KLDR_DATA_TABLE_ENTRY, InLoadOrderLinks );
-		if (Entry)
-		{
-			if (StrnCmp( Entry->BaseImageName.Buffer, ModuleName, Entry->BaseImageName.Length ) == 0)
-			{
-				return Entry;
-			}
-		}
+		if (Entry && (StrnCmp( Entry->BaseImageName.Buffer, ModuleName, Entry->BaseImageName.Length ) == 0))
+			return Entry;
 	}
 
 	return NULL;
@@ -77,20 +75,64 @@ PKLDR_DATA_TABLE_ENTRY GetLoadedModule( LIST_ENTRY* LoadOrderListHead, CHAR16* M
 //
 VOID EFIAPI hkOslArchTransferToKernel( PLOADER_PARAMETER_BLOCK KernelParams, VOID *KiSystemStartup )
 {
-	__debugbreak( );
-
 	VOID* KernelBase = NULL;
 	UINT32 KernelSize = 0;
+	PKLDR_DATA_TABLE_ENTRY KernelEntry = NULL;
 
-	PKLDR_DATA_TABLE_ENTRY KernelEntry = GetLoadedModule( &KernelParams->LoadOrderListHead, L"ntoskrnl.exe" );
+	UINT8* Found = NULL;
+	EFI_STATUS Status = EFI_SUCCESS;
+
+	__debugbreak( );
+
+	//
+	// Before we do anything, restore original call bytes
+	//
+	CopyMem( OslArchTransferToKernelCallPatchLocation, OslArchTransferToKernelCallBackup, 5 );
+
+	//
+	// Get ntoskrnl entry from the loader parameter block's LoadOrderList
+	//
+	KernelEntry = GetLoadedModule( &KernelParams->LoadOrderListHead, L"ntoskrnl.exe" );
 	if (KernelEntry)
 	{
 		KernelBase = KernelEntry->ImageBase;
 		KernelSize = KernelEntry->SizeOfImage;
 	}
 
+	if (KernelBase && KernelSize)
+	{
+		//
+		// Find patch guard initialization function
+		//
+		Status = UtilFindPattern( sigInitPatchGuard, 0xCC, sizeof( sigInitPatchGuard ), KernelBase, KernelSize, (VOID**)&Found );
+		if (Status == EFI_SUCCESS)
+		{
+			InitPatchGuardPatchLocation = (VOID*)Found;
 
+			//
+			// Patch to force a jump to skip PG initialization
+			//
+			*(UINT8*)Found = 0xE8;
+		}
 
+		//
+		// Find NX bit setting location
+		//
+		Status = UtilFindPattern( sigNxSetBit, 0xCC, sizeof( sigNxSetBit ), KernelBase, KernelSize, (VOID**)&Found );
+		if (Status == EFI_SUCCESS)
+		{
+			NxSetBitPatchLocation = (VOID*)Found;
+
+			//
+			// Patch to force a jump to skip setting the No Execute bit
+			//
+			*(UINT8*)Found = 0xE8;
+		}
+	}
+
+	//
+	// Pass execution onto the Kernel
+	//
 	oOslArchTransferToKernel( KernelParams, KiSystemStartup );
 }
 
