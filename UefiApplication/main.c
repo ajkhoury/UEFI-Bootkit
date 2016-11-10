@@ -88,6 +88,12 @@ EFI_STATUS EFIAPI UefiMain( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* Syst
 	EFI_HANDLE RuntimeDriverHandle = NULL;
 
 	//
+	// Clear screen and make pretty
+	//
+	gST->ConOut->ClearScreen( gST->ConOut );
+	gST->ConOut->SetAttribute( gST->ConOut, EFI_GREEN | EFI_BACKGROUND_LIGHTGRAY );
+
+	//
 	// Locate the runtime driver
 	//
 	efiStatus = LocateFile( gRuntimeDriverImagePath, &RuntimeDriverDevicePath );

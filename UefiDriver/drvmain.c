@@ -46,9 +46,21 @@ CHAR8 *gEfiCallerBaseName = "UefiDriver";
 #define BOOTMGFW_EFI_PATH	L"\\EFI\\Microsoft\\Boot\\bootmgfw.efi"
 
 static EFI_HANDLE gWindowsImagehandle;
+static EFI_LOADED_IMAGE* gLocalImageInfo;
+
 
 // Inside hooks.asm
-VOID* FindPattern( VOID* ImageBase, UINT32 ImageSize, UINT8* Pattern, UINT32 PatternSize );
+VOID* FindPattern( VOID* ImageBase, UINT32 ImageSize, const UINT8* Pattern, UINT32 PatternSize );
+
+
+//
+// OslArchTransferToKernel hook
+//
+VOID EFIAPI hkOslArchTransferToKernel( VOID *KernelParams, VOID *KiSystemStartup )
+{
+	__debugbreak( );
+	oOslArchTransferToKernel( KernelParams, KiSystemStartup );
+}
 
 //
 // Our ImgArchEfiStartBootApplication hook which takes the winload Image Base as a parameter so we can patch the kernel
@@ -86,32 +98,29 @@ EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( PBL_APPLICATION_ENTRY AppEnt
 		EFI_STATUS EfiStatus = EFI_SUCCESS;
 		UINT8* Found = NULL;
 
-		VOID* ArchpChildAppEntryRoutine = (VOID*)((UINT8*)ImageBase + HEADER_VAL_T( NtHdr, AddressOfEntryPoint ));
-		Print( L"ArchpChildAppEntryRoutine = %lx\r\n", ArchpChildAppEntryRoutine );		
-
 		// Find right location to patch
-		Found = FindPattern( ImageBase, ImageSize, sigOslArchTransferToKernel, sizeof( sigOslArchTransferToKernel ) );
-		if (Found)
+		EfiStatus = UtilFindPattern( sigOslArchTransferToKernelCall, 0xCC, sizeof( sigOslArchTransferToKernelCall ), ImageBase, ImageSize, (VOID**)&Found );
+		if (EfiStatus == EFI_SUCCESS)
 		{
 			Print( L"Found OslArchTransferToKernel call at %lx\r\n", Found );
-
+			
 			// Get original from call instruction
 			oOslArchTransferToKernel = (tOslArchTransferToKernel)UtilCallAddress( Found );
 			Print( L"OslArchTransferToKernel at %lx\r\n", oOslArchTransferToKernel );
-			Print( L"OslArchTransferToKernelHook at %lx\r\n", &OslArchTransferToKernelHook );
-
+			Print( L"OslArchTransferToKernelHook at %lx\r\n", &hkOslArchTransferToKernel );
+			
 			// Backup original function bytes before patching
-			OslArchTransferToKernelPatchLocation = (VOID*)Found;
-			CopyMem( (VOID*)OslArchTransferToKernelBackup, (VOID*)Found, 5 );
-
+			OslArchTransferToKernelCallPatchLocation = (VOID*)Found;
+			CopyMem( (VOID*)OslArchTransferToKernelCallBackup, (VOID*)Found, 5 );
+			
 			// display original code
 			Print( L"Original:\r\n" );
 			UtilDisassembleCode( (UINT8*)Found, (VOID*)Found, 5 );
-
+			
 			// Do patching 
 			*(UINT8*)Found = 0xE8;
-			*(UINT32*)(Found + 1) = UtilCalcRelativeCallOffset( (VOID*)Found, (VOID*)&OslArchTransferToKernelHook );
-
+			*(UINT32*)(Found + 1) = UtilCalcRelativeCallOffset( (VOID*)Found, (VOID*)&hkOslArchTransferToKernel );
+			
 			// Display patched code 
 			Print( L"Patched:\r\n" );
 			UtilDisassembleCode( (UINT8*)Found, (VOID*)Found, 5 );
@@ -121,6 +130,8 @@ EFI_STATUS EFIAPI hkImgArchEfiStartBootApplication( PBL_APPLICATION_ENTRY AppEnt
 			Print( L"\r\nImgArchEfiStartBootApplication error, failed to find OslArchTransferToKernel patch location. Status: %lx\r\n", EfiStatus );
 		}
 	}
+
+	UtilPrintLoadedImageInfo( gLocalImageInfo );
 
 	Print( L"Press any key to continue..." );
 	UtilWaitForKey( );
@@ -192,11 +203,13 @@ EFI_STATUS PatchWindowsBootManager( IN VOID* LocalImageBase, IN EFI_HANDLE BootM
 EFI_STATUS EFIAPI UefiMain( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable )
 {
 	EFI_STATUS efiStatus;
-	EFI_LOADED_IMAGE* Image;
 	EFI_DEVICE_PATH* WinBootMgrDevicePath;
 
-	// Clear screen
+	//
+	// Clear screen and make pretty
+	//
 	gST->ConOut->ClearScreen( gST->ConOut );
+	gST->ConOut->SetAttribute( gST->ConOut, EFI_GREEN | EFI_BACKGROUND_LIGHTGRAY );
 
 	//
 	// Install required driver binding components
@@ -211,10 +224,10 @@ EFI_STATUS EFIAPI UefiMain( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syst
 	Print( L"\r\n\r\n" );
 	Print( L"%s", BOOTKIT_TITLE1 );
 	Print( L"%s", BOOTKIT_TITLE2 );
-	efiStatus = gBS->HandleProtocol( ImageHandle, &gEfiLoadedImageProtocolGuid, &Image );
+	efiStatus = gBS->HandleProtocol( ImageHandle, &gEfiLoadedImageProtocolGuid, &gLocalImageInfo );
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
-	UtilPrintLoadedImageInfo( Image );
+	UtilPrintLoadedImageInfo( gLocalImageInfo );
 
 	//
 	// Locate 
@@ -229,7 +242,7 @@ EFI_STATUS EFIAPI UefiMain( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syst
 	efiStatus = ImageLoad( ImageHandle, WinBootMgrDevicePath, &gWindowsImagehandle );
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
-	efiStatus = PatchWindowsBootManager( Image->ImageBase, gWindowsImagehandle );
+	efiStatus = PatchWindowsBootManager( gLocalImageInfo->ImageBase, gWindowsImagehandle );
 	if (EFI_ERROR( efiStatus ))
 		goto Exit;
 	Print( L"Patched!\r\n" );

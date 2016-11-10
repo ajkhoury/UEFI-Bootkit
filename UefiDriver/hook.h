@@ -12,7 +12,7 @@ EFI_STATUS PrintTestString( VOID );
 // ImgArchEfiStartBootApplication hook
 //
 typedef EFI_STATUS( EFIAPI *tImgArchEfiStartBootApplication )(PBL_APPLICATION_ENTRY AppEntry, VOID* ImageBase, UINT32 ImageSize, UINT8 BootOption, PBL_RETURN_ARGUMENTS ReturnArguments);
-static UINT8 sigImgArchEfiStartBootApplicationCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x8B, 0xCE, 0x8B, 0xD8, 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x41 };
+UINT8 sigImgArchEfiStartBootApplicationCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x8B, 0xCE, 0x8B, 0xD8, 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x41 };
 VOID* ImgArchEfiStartBootApplicationPatchLocation = NULL;
 UINT8 ImgArchEfiStartBootApplicationBackup[5] = { 0 };
 tImgArchEfiStartBootApplication oImgArchEfiStartBootApplication = NULL;
@@ -21,22 +21,20 @@ tImgArchEfiStartBootApplication oImgArchEfiStartBootApplication = NULL;
 // OslArchTransferToKernel hook
 //
 typedef VOID( EFIAPI *tOslArchTransferToKernel )(VOID *KernelParams, VOID *KiSystemStartup);
-static UINT8 sigOslArchTransferToKernel[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0xEB, 0xFE }; //48 8B 45 A8 33 FF
-extern VOID* OslArchTransferToKernelPatchLocation;
-extern UINT8 OslArchTransferToKernelBackup[5];
+UINT8 sigOslArchTransferToKernelCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0xEB, 0xFE }; // 48 8B 45 A8 33 FF
+VOID* OslArchTransferToKernelCallPatchLocation;
+UINT8 OslArchTransferToKernelCallBackup[5];
 tOslArchTransferToKernel oOslArchTransferToKernel = NULL;
-extern VOID* OslArchTransferToKernelHook;
+VOID* OslArchTransferToKernelHook;
 
 //
-// Winload calls
+// OslLoadImage hook
 //
-UINT8 sigEfiStallCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x0F, 0x31, 0x48, 0xC1, 0xE2, 0x20, 0x48, 0x8B };
-typedef INT64( EFIAPI *tEfiStall )(UINT64 MicroSeconds);
-tEfiStall EfiStall = NULL;
-
-UINT8 sigEfiConOutOutputString[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x85, 0xC0, 0x78, 0x05, 0x83, 0xC3, 0xFF };
-typedef INT64( EFIAPI *tEfiConOutOutputString )(VOID* ConOut, CHAR16* String);
-tEfiConOutOutputString EfiConOutOutputString = NULL;
+UINT8 sigOslLoadImageCall[] = { 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x63, 0xCC, 0x85, 0xCC, 0x0F, 0x89 };
+typedef EFI_STATUS( EFIAPI *tOslLoadImage )(UINT64 DataTableIndex, UINT32 LoadFlags, CHAR16 *ImagePath, CHAR16 *ImageName, UINT32 ImageFlags, VOID* Base, UINT32 Size);
+VOID* OslLoadImageCallPatchLocation = NULL;
+UINT8 OslLoadImageCallBackup[5] = { 0 };
+tOslLoadImage oOslLoadImage = NULL;
 
 
 // 
@@ -95,5 +93,5 @@ UINTN sigNxSetBitSize = sizeof( sigNxSetBit );
 // INIT:000000014074BAAA C3                       retn
 // INIT:000000014074BAAA                     KeInitAmd64SpecificState endp
 UINT8 sigInitPatchGuard[] = { 0x75, 0x2D, 0x0F, 0xB6, 0x15 };
-UINTN sigInitPatchGuardSize = sizeof( sigInitPatchGuard );
+UINTN sigInitPatchGuardSize = 5;
 

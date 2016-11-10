@@ -19,8 +19,8 @@
 ;*********************************************************************
 ; Public symbols
 ; Saved OslArchTransferToKernel location and bytes from before the patch
-public OslArchTransferToKernelBackup
-public OslArchTransferToKernelPatchLocation
+public OslArchTransferToKernelCallBackup
+public OslArchTransferToKernelCallPatchLocation
 
 ;*********************************************************************
 ; .data section
@@ -29,14 +29,11 @@ public OslArchTransferToKernelPatchLocation
 ALIGN 16
 
 ; Saved OslArchTransferToKernel bytes from before the patch
-OslArchTransferToKernelBackup db 5 dup(0)
-OslArchTransferToKernelPatchLocation dq 0
+OslArchTransferToKernelCallBackup db 5 dup(0)
+OslArchTransferToKernelCallPatchLocation dq 0
 
 ; Original OslArchTransferToKernel address
 extern oOslArchTransferToKernel:dq
-; Winload functions
-extern EfiStall:dq
-extern EfiConOutOutputString:dq
 
 
 ; Kernel patch patterns
@@ -87,6 +84,8 @@ PrintStringTest ENDP
 ; VOID __fastcall OslArchTransferToKernel(VOID *KernelParams, VOID *KiSystemStartup)
 ;
 OslArchTransferToKernelHook PROC
+	; debug break point
+	db 0CCh
 	; Save registers to do our kernel patching
 	push r15
 	push r14
@@ -113,8 +112,8 @@ OslArchTransferToKernelHook PROC
 
 	; Before we do anything lets restore the original function bytes
 restore_bytes:
-	lea rsi, OslArchTransferToKernelBackup
-	mov rdi, OslArchTransferToKernelPatchLocation
+	lea rsi, OslArchTransferToKernelCallBackup
+	mov rdi, OslArchTransferToKernelCallPatchLocation
 	mov rcx, 5 ; our patch size was 5 bytes
 	rep movsb byte ptr [rdi], byte ptr [rsi] ; restore bytes
 
