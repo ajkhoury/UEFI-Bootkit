@@ -7,7 +7,7 @@ Thanks to [pyro666](https://github.com/Pyro666), [dreamboot](https://github.com/
 ![alt text](https://i.gyazo.com/8fa42e625ee993ab1bd0ee136076f5ef.png "Bootkit")
 
 ## License
-Copyright (C) 2016 dude719, pyro666, Quarkslab
+Copyright (C) 2016 Aidan Khoury (dude719), pyro666, Quarkslab
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
