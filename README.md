@@ -1,6 +1,6 @@
 # UEFI-Bootkit
 
-A small bootkit designed to use zero assembly. Make sure to compile the driver as an EFI Runtime driver (EFI_RUNTIME_DRIVER) or else the bootkit will be freed once winload.efi calls ExitBootService!
+A small bootkit designed to use zero assembly. Make sure to compile the driver as an EFI Runtime driver (EFI_RUNTIME_DRIVER) or else the bootkit will be freed once winload.efi calls ExitBootServices!
 
 Thanks to [pyro666](https://github.com/Pyro666), [dreamboot](https://github.com/quarkslab/dreamboot), and [VisualUEFI](https://github.com/ionescu007/VisualUefi)
 
