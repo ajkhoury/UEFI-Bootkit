@@ -4,7 +4,6 @@ A small bootkit designed to use zero assembly. Make sure to compile the driver a
 
 Thanks to [pyro666](https://github.com/Pyro666), [dreamboot](https://github.com/quarkslab/dreamboot), and [VisualUEFI](https://github.com/ionescu007/VisualUefi)
 
-![alt text](https://i.gyazo.com/8fa42e625ee993ab1bd0ee136076f5ef.png "Bootkit")
 
 ## License
 Copyright (C) 2016 Aidan Khoury (dude719), pyro666, Quarkslab
