@@ -6,7 +6,7 @@ Thanks to [pyro666](https://github.com/Pyro666), [dreamboot](https://github.com/
 
 
 ## License
-Copyright (C) 2016 Aidan Khoury (dude719), pyro666, Quarkslab
+Copyright (C) 2016 Aidan Khoury (dude719), Quarkslab
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
