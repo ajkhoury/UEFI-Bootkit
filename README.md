@@ -6,7 +6,7 @@ Thanks to [dreamboot](https://github.com/quarkslab/dreamboot), and [VisualUEFI](
 
 
 ## License
-Copyright (C) 2016 Aidan Khoury (dude719), Quarkslab
+Copyright (C) 2016-2019 Aidan Khoury (ajkhoury), Quarkslab
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
